@@ -23,6 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Ignora o arquivo de configuração do Firebase para evitar que as credenciais sejam expostas
-src/firebaseConfig.js
+
 
