@@ -1,0 +1,24 @@
+/* src/index.css */
+/* Importa as camadas base do Tailwind CSS. Inclui estilos de reset e pré-voo. */
+@import 'tailwindcss/base';
+/* Importa os componentes do Tailwind CSS. Inclui estilos para componentes pré-construídos. */
+@import 'tailwindcss/components';
+/* Importa as classes utilitárias do Tailwind CSS. Permite construir designs complexos com classes de baixo nível. */
+@import 'tailwindcss/utilities';
+
+/* Define a fonte 'Inter' como padrão para toda a aplicação. */
+/* Se a fonte 'Inter' não estiver disponível, uma fonte genérica 'sans-serif' será usada como fallback. */
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0; /* Remove margem padrão do body */
+  padding: 0; /* Remove padding padrão do body */
+  box-sizing: border-box; /* Garante que padding e borda sejam incluídos na dimensão total do elemento */
+}
+
+/* Garante que o elemento root do React (#root) ocupe no mínimo 100% da altura da viewport. */
+/* Utiliza flexbox para que seu conteúdo possa se expandir e ocupar o espaço disponível. */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
