@@ -43,8 +43,8 @@ const CreditCardExpensesPage = ({ user, cardId, cardName, onBack, onLogout }) =>
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 flex flex-col items-center font-inter">
-      <div className="bg-gray-800 text-gray-100 p-8 rounded-3xl shadow-2xl max-w-2xl w-full">
+    <div className="min-h-screen bg-gray-950 text-white px-4 py-6 sm:px-6 md:px-8 flex flex-col items-center font-inter">
+      <div className="bg-gray-800 text-gray-100 p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl w-full lg:max-w-2xl">
         <header className="flex justify-between items-center mb-6 border-b pb-4 border-gray-700">
             <div className="flex items-center space-x-4">
                 <img
@@ -72,7 +72,7 @@ const CreditCardExpensesPage = ({ user, cardId, cardName, onBack, onLogout }) =>
             </div>
         </header>
 
-        <div className="mb-8 p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700">
+        <div className="mb-8 p-4 sm:p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700">
           <h2 className="text-2xl font-bold mb-4 text-gray-100">Despesas do Cartão: {cardName}</h2>
           {cardExpenses.length === 0 ? (
             <p className="text-gray-400 text-center">Nenhuma despesa para este cartão ainda.</p>
@@ -82,9 +82,9 @@ const CreditCardExpensesPage = ({ user, cardId, cardName, onBack, onLogout }) =>
                 {cardExpenses.map((expense) => (
                   <li
                     key={expense.id}
-                    className="flex justify-between items-center bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-600"
+                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-600"
                   >
-                    <div>
+                    <div className="mb-2 sm:mb-0">
                       <p className="text-gray-100 font-medium">{expense.description}</p>
                       <p className="text-gray-400 text-sm">
                         R$ {Math.abs(expense.amount).toFixed(2)} - {new Date(expense.date + 'T00:00:00').toLocaleDateString()} (Mês Ref.: {formatReferenceMonth(expense.referenceMonth)})
@@ -113,6 +113,3 @@ const CreditCardExpensesPage = ({ user, cardId, cardName, onBack, onLogout }) =>
 };
 
 export default CreditCardExpensesPage;
-
-
-

@@ -1,14 +1,15 @@
-// src/components/Auth.jsx
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import { auth } from '../firebaseConfig'; // Importa a instância de autenticação do Firebase
 
+// Componente para a tela de Autenticação (Login e Registro)
 const Auth = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState('');
 
+  // Referência para o botão principal para poder "clicá-lo" via código
   const mainButtonRef = React.useRef(null);
 
   const handleLogin = async () => {
@@ -47,9 +48,12 @@ const Auth = ({ onLoginSuccess }) => {
     }
   };
 
+  // Função para lidar com a tecla "Enter" nos inputs
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
-      event.preventDefault();
+      // Impede o comportamento padrão do Enter (como submeter um formulário HTML nativo se houver)
+      event.preventDefault(); 
+      // Aciona o clique do botão principal (Entrar/Registrar)
       if (mainButtonRef.current) {
         mainButtonRef.current.click();
       }
@@ -57,13 +61,13 @@ const Auth = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 p-4 font-inter">
-      <div className="bg-gray-800 p-8 rounded-3xl shadow-2xl w-full max-w-sm transform transition-all duration-300 hover:scale-102">
+    <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4 py-6 sm:px-6 md:px-8 font-inter">
+      <div className="bg-gray-800 p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-sm transform transition-all duration-300 hover:scale-102">
         <div className="flex justify-center mb-6">
           <img
             src="/dindion_logo.png"
             alt="Logo DindiOn - Porquinho Mealheiro"
-            className="w-32 h-32 object-contain rounded-lg shadow-sm"
+            className="w-28 h-28 sm:w-32 sm:h-32 object-contain rounded-lg shadow-sm"
           />
         </div>
         <h2 className="text-3xl font-extrabold text-center mb-6">
@@ -117,3 +121,4 @@ const Auth = ({ onLoginSuccess }) => {
 };
 
 export default Auth;
+

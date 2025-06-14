@@ -1,9 +1,9 @@
 // src/pages/ApplicationPage.jsx
 import React, { useState, useEffect } from 'react';
-import { ref, push, onValue, remove } from 'firebase/database';
+import { ref, push, onValue, remove } from 'firebase/database'; // 'set' removido
 import { database } from '../firebaseConfig';
 
-// Função auxiliar para obter a data atual no formato YYYY-MM-DD no fuso horário local
+// Função auxiliar para obter a data atual no formato ISO (AAAA-MM-DD) no fuso horário local
 const getTodayLocalISO = () => {
   const today = new Date();
   const year = today.getFullYear();
@@ -26,6 +26,7 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
   const [newCardName, setNewCardName] = useState('');
   const [numberOfInstallments, setNumberOfInstallments] = useState(1);
   const [transactionType, setTransactionType] = useState('expense'); // 'expense' ou 'recipe'
+  // const [userSettings, setUserSettings] = useState({ removeAds: false }); // Estado removido
 
   // Geração das opções de mês para o formulário de adição
   const getMonthsForNewExpense = () => {
@@ -71,9 +72,21 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
         }
       });
 
+      // Listener para configurações do usuário (para ads) - Removido
+      // const settingsRef = ref(database, `users/${user.uid}/settings`);
+      // const unsubscribeSettings = onValue(settingsRef, (snapshot) => {
+      //   const data = snapshot.val();
+      //   if (data) {
+      //     setUserSettings(data);
+      //   } else {
+      //     set(settingsRef, { removeAds: false });
+      //   }
+      // });
+
       return () => {
         unsubscribeTransactions();
         unsubscribeCards();
+        // unsubscribeSettings(); // Limpa o listener de configurações também - Removido
       };
     }
   }, [user, selectedCardId]);
@@ -89,7 +102,6 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
       }
     }
   }, [monthsForNewExpenseOptions, selectedMonthForNewExpense]);
-
 
   const handleAddCard = async () => {
     if (!newCardName.trim()) {
@@ -137,13 +149,12 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
         return;
     }
 
-    // O valor será armazenado como negativo para despesas e positivo para receitas
     const parsedAmount = parseFloat(amount);
     const finalAmount = transactionType === 'expense' ? -parsedAmount : parsedAmount;
 
     try {
       if (transactionType === 'expense' && paymentType === 'credit' && numberOfInstallments > 1) {
-        const installmentAmount = finalAmount / numberOfInstallments; // Já é negativo
+        const installmentAmount = finalAmount / numberOfInstallments;
         
         const initialDay = parseInt(expenseDate.split('-')[2]);
         const [startYear, startMonth] = selectedMonthForNewExpense.split('-').map(Number);
@@ -165,7 +176,7 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
             amount: installmentAmount,
             date: formattedInstallmentDate,
             referenceMonth: installmentReferenceMonth,
-            type: transactionType, // 'expense'
+            type: transactionType,
             paymentType,
             cardId: selectedCardId,
             cardName: creditCards.find(card => card.id === selectedCardId)?.name,
@@ -179,14 +190,12 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
           currentInstallmentDate.setDate(Math.min(initialDay, lastDayOfNextCalculatedMonth));
         }
       } else {
-        // Transação única (à vista ou receita)
         const singleTransaction = {
           description,
           amount: finalAmount,
           date: expenseDate,
           referenceMonth: selectedMonthForNewExpense,
-          type: transactionType, // 'expense' ou 'recipe'
-          // Campos opcionais para despesas de crédito
+          type: transactionType,
           paymentType: transactionType === 'expense' ? paymentType : null,
           cardId: transactionType === 'expense' && paymentType === 'credit' ? selectedCardId : null,
           cardName: transactionType === 'expense' && paymentType === 'credit' ? creditCards.find(card => card.id === selectedCardId)?.name : null,
@@ -198,7 +207,7 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
       setAmount('');
       setExpenseDate(getTodayLocalISO());
       setNumberOfInstallments(1);
-      setTransactionType('expense'); // Volta para o padrão 'expense'
+      setTransactionType('expense');
     } catch (error) {
       console.error('Erro ao adicionar transação:', error);
       alert('Erro ao adicionar transação. Tente novamente.');
@@ -216,6 +225,19 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
     }
   };
 
+  // Função para alternar o status de remoção de anúncios - Removido
+  // const handleToggleAds = async () => {
+  //   if (!user) return;
+  //   try {
+  //     const settingsRef = ref(database, `users/${user.uid}/settings`);
+  //     await set(settingsRef, { removeAds: !userSettings.removeAds });
+  //     alert(userSettings.removeAds ? 'Anúncios reativados.' : 'Anúncios removidos com sucesso! (Simulado)');
+  //   } catch (error) {
+  //     console.error('Erro ao atualizar configurações:', error);
+  //     alert('Erro ao atualizar configurações. Tente novamente.');
+  //   }
+  // };
+
   // Calcula o saldo total (receitas - despesas)
   const totalBalance = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
 
@@ -226,8 +248,8 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 flex flex-col items-center font-inter">
-      <div className="bg-gray-800 text-gray-100 p-8 rounded-3xl shadow-2xl max-w-2xl w-full">
+    <div className="min-h-screen bg-gray-950 text-white px-4 py-6 sm:px-6 md:px-8 flex flex-col items-center font-inter">
+      <div className="bg-gray-800 text-gray-100 p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl w-full lg:max-w-2xl">
         <header className="flex justify-between items-center mb-6 border-b pb-4 border-gray-700">
           <div className="flex items-center space-x-4">
             <img
@@ -249,7 +271,8 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
 
         <p className="text-lg mb-6 text-center text-gray-400">Bem-vindo(a), <span className="font-semibold">{user.email}</span>!</p>
 
-        <div className="mb-8 p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700">
+        {/* Seção de gerenciamento de cartões */}
+        <div className="mb-8 p-4 sm:p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700">
           <h2 className="text-2xl font-bold mb-4 text-gray-100 flex justify-between items-center">
             Meus Cartões de Crédito
             <button
@@ -264,8 +287,8 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
           ) : (
             <ul className="space-y-3">
               {creditCards.map((card) => (
-                <li key={card.id} className="flex justify-between items-center bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-600">
-                  <span className="text-gray-100 font-medium">{card.name}</span>
+                <li key={card.id} className="flex flex-col sm:flex-row justify-between items-center sm:items-center bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-600">
+                  <span className="text-gray-100 font-medium mb-2 sm:mb-0">{card.name}</span>
                   <div className="flex space-x-2">
                     <button
                       onClick={() => onViewCardExpenses(card.id, card.name)}
@@ -323,13 +346,13 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
         )}
 
         {/* Formulário para adicionar despesas/receitas */}
-        <form onSubmit={handleAddTransaction} className="mb-8 p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700">
+        <form onSubmit={handleAddTransaction} className="mb-8 p-4 sm:p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700">
           <h2 className="text-2xl font-bold mb-4 text-gray-100">Adicionar Nova Transação</h2>
           
           {/* Campo para selecionar o tipo de transação */}
           <div className="mb-4">
             <span className="block text-gray-400 text-sm font-medium mb-2">Tipo de Transação</span>
-            <div className="flex space-x-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
               <label className="inline-flex items-center">
                 <input
                   type="radio"
@@ -420,7 +443,7 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
             <>
               <div className="mb-4">
                 <span className="block text-gray-400 text-sm font-medium mb-2">Tipo de Pagamento</span>
-                <div className="flex space-x-4">
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
                   <label className="inline-flex items-center">
                     <input
                       type="radio"
@@ -500,7 +523,7 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
         </form>
 
         {/* Lista de transações (resumida, com botão para ver todas) */}
-        <div className="mb-8 p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700">
+        <div className="mb-8 p-4 sm:p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700">
           <h2 className="text-2xl font-bold mb-4 text-gray-100 flex justify-between items-center">
             Últimas Transações
             <button
@@ -518,9 +541,9 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
                 {transactions.slice(0, 5).map((transaction) => (
                   <li
                     key={transaction.id}
-                    className="flex justify-between items-center bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-600"
+                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-600"
                   >
-                    <div>
+                    <div className="mb-2 sm:mb-0">
                       <p className="text-gray-100 font-medium">{transaction.description}</p>
                       <p className={`text-sm ${transaction.type === 'expense' ? 'text-red-400' : 'text-emerald-400'}`}>
                         R$ {Math.abs(transaction.amount).toFixed(2)} - {new Date(transaction.date + 'T00:00:00').toLocaleDateString()} (Mês Ref.: {formatReferenceMonth(transaction.referenceMonth)})
@@ -543,6 +566,29 @@ const ApplicationPage = ({ user, onLogout, onViewCardExpenses, onViewAllExpenses
             </>
           )}
         </div>
+
+        {/* Seção de Publicidade (removida) */}
+        {/*
+        {!userSettings.removeAds && (
+          <div className="mt-8 p-4 sm:p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700 text-center">
+            <h3 className="text-xl font-bold mb-4 text-gray-100">Espaço Publicitário</h3>
+            <img
+              src="https://placehold.co/468x60/30CFCF/FFFFFF?text=Seu+Anúncio+Aqui"
+              alt="Anúncio Placeholder"
+              className="mx-auto rounded-md shadow-md mb-4 w-full max-w-sm sm:max-w-md"
+            />
+            <p className="text-gray-400 text-sm mb-4">
+              Apoie o DindiOn e remova todos os anúncios!
+            </p>
+            <button
+              onClick={handleToggleAds}
+              className="bg-emerald-600 text-white py-2 px-5 rounded-lg font-semibold hover:bg-emerald-700 transition duration-300 transform hover:scale-105 shadow-md"
+            >
+              Remover Anúncios (Simulado)
+            </button>
+          </div>
+        )}
+        */}
       </div>
     </div>
   );

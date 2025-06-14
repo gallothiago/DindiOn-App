@@ -6,11 +6,11 @@ import { database } from '../firebaseConfig';
 const AllExpensesPage = ({ user, onBack, onLogout }) => {
   const [allTransactions, setAllTransactions] = useState([]);
   const [filterType, setFilterType] = useState('all'); // 'all', 'cash', 'credit', 'recipe'
-  const [selectedReferenceMonth, setSelectedReferenceMonth] = useState('');
+  const [selectedReferenceMonth, setSelectedReferenceMonth] = useState(''); // Estado para o mês de referência selecionado
 
   useEffect(() => {
     if (user) {
-      const transactionsRef = ref(database, `users/${user.uid}/transactions`);
+      const transactionsRef = ref(database, `users/${user.uid}/transactions`); // Aponta para 'transactions'
       const unsubscribe = onValue(transactionsRef, (snapshot) => {
         const data = snapshot.val();
         const loadedTransactions = [];
@@ -20,7 +20,7 @@ const AllExpensesPage = ({ user, onBack, onLogout }) => {
           }
           loadedTransactions.push({ id, ...data[id] });
         }
-        setAllTransactions(loadedTransactions);
+        setAllTransactions(loadedTransactions); // Atualiza para allTransactions
       });
       return () => unsubscribe();
     }
@@ -28,7 +28,7 @@ const AllExpensesPage = ({ user, onBack, onLogout }) => {
 
   const getUniqueReferenceMonths = () => {
     const months = new Set();
-    allTransactions.forEach(transaction => {
+    allTransactions.forEach(transaction => { // Itera sobre allTransactions
       if (transaction.referenceMonth && transaction.referenceMonth !== '') {
         months.add(transaction.referenceMonth);
       }
@@ -38,6 +38,12 @@ const AllExpensesPage = ({ user, onBack, onLogout }) => {
   };
 
   const referenceMonthOptions = getUniqueReferenceMonths();
+
+  const formatReferenceMonth = (yearMonth) => {
+    if (!yearMonth) return '';
+    const [year, month] = yearMonth.split('-').map(Number);
+    return new Date(year, month - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  };
 
   useEffect(() => {
     if (!selectedReferenceMonth || !referenceMonthOptions.includes(selectedReferenceMonth)) {
@@ -56,8 +62,8 @@ const AllExpensesPage = ({ user, onBack, onLogout }) => {
     }
   }, [allTransactions, referenceMonthOptions]);
 
-
-  const filteredTransactions = allTransactions.filter(transaction => {
+  const filteredTransactions = allTransactions.filter(transaction => { // Filtra allTransactions
+    // Filtro por tipo de pagamento/transação
     const matchesType = (
       filterType === 'all' ||
       (filterType === 'cash' && transaction.type === 'expense' && transaction.paymentType === 'cash') ||
@@ -65,23 +71,18 @@ const AllExpensesPage = ({ user, onBack, onLogout }) => {
       (filterType === 'recipe' && transaction.type === 'recipe')
     );
     
+    // Filtro por mês de referência
     const transactionRefMonth = String(transaction.referenceMonth || '');
     const matchesReferenceMonth = (selectedReferenceMonth === '' && referenceMonthOptions.length === 0) || (transactionRefMonth === selectedReferenceMonth);
 
     return matchesType && matchesReferenceMonth;
   });
 
-  const totalFilteredBalance = filteredTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
-
-  const formatReferenceMonth = (yearMonth) => {
-    if (!yearMonth) return '';
-    const [year, month] = yearMonth.split('-').map(Number);
-    return new Date(year, month - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  };
+  const totalFilteredBalance = filteredTransactions.reduce((sum, transaction) => sum + transaction.amount, 0); // Calcula o saldo
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 flex flex-col items-center font-inter">
-      <div className="bg-gray-800 p-8 rounded-3xl shadow-2xl max-w-4xl w-full">
+    <div className="min-h-screen bg-gray-950 text-white px-4 py-6 sm:px-6 md:px-8 flex flex-col items-center font-inter">
+      <div className="bg-gray-800 p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl w-full lg:max-w-4xl">
         <header className="flex justify-between items-center mb-6 border-b pb-4 border-gray-700">
             <div className="flex items-center space-x-4">
                 <img
@@ -109,7 +110,7 @@ const AllExpensesPage = ({ user, onBack, onLogout }) => {
             </div>
         </header>
 
-        <div className="mb-6 p-4 bg-gray-900 rounded-2xl shadow-inner border border-gray-700 flex flex-wrap justify-center gap-4">
+        <div className="mb-6 p-4 sm:p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700 flex flex-col sm:flex-row flex-wrap justify-center gap-4">
           <label className="inline-flex items-center">
             <input
               type="radio"
@@ -155,7 +156,7 @@ const AllExpensesPage = ({ user, onBack, onLogout }) => {
             <span className="ml-2 text-gray-400">Receitas</span>
           </label>
 
-          <div className="ml-4">
+          <div className="sm:ml-4 mt-4 sm:mt-0 w-full sm:w-auto">
             <label htmlFor="referenceMonthSelect" className="block text-gray-400 text-sm font-medium mb-2">
               Filtrar por Mês de Referência
             </label>
@@ -177,7 +178,7 @@ const AllExpensesPage = ({ user, onBack, onLogout }) => {
           </div>
         </div>
 
-        <div className="overflow-x-auto mb-8 p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700">
+        <div className="overflow-x-auto mb-8 p-4 sm:p-6 bg-gray-900 rounded-2xl shadow-inner border border-gray-700">
           {filteredTransactions.length === 0 ? (
             <p className="text-gray-400 text-center">Nenhuma transação encontrada com o filtro selecionado.</p>
           ) : (
@@ -228,7 +229,7 @@ const AllExpensesPage = ({ user, onBack, onLogout }) => {
           )}
           <div className="mt-6 pt-4 border-t border-gray-700 text-right">
             <p className="text-xl font-bold text-gray-100">
-              Saldo: <span className={totalFilteredBalance >= 0 ? 'text-emerald-400' : 'text-red-400'}>R$ {totalFilteredBalance.toFixed(2)}</span>
+              Saldo do Filtro: <span className={totalFilteredBalance >= 0 ? 'text-emerald-400' : 'text-red-400'}>R$ {totalFilteredBalance.toFixed(2)}</span>
             </p>
           </div>
         </div>
