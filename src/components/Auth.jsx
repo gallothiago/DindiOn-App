@@ -1,3 +1,4 @@
+// src/components/Auth.jsx
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig'; // Importa a instância de autenticação do Firebase
@@ -60,9 +61,24 @@ const Auth = ({ onLoginSuccess }) => {
     }
   };
 
+  // Classes condicionais para o background e borda do card
+  const cardBgClass = isRegistering ? 'bg-emerald-700' : 'bg-gray-800'; // Fundo do card
+  const cardBorderClass = isRegistering ? 'border-2 border-gray-900' : 'border border-gray-700'; // Borda do card
+
+  // Classes condicionais para o botão principal
+  const mainButtonClass = isRegistering 
+    ? 'bg-gray-900 text-white hover:bg-gray-950' // Fundo escuro e texto branco para registro
+    : 'bg-emerald-600 text-white hover:bg-emerald-700'; // Fundo verde e texto branco para login
+
+  // Classes condicionais para o botão de alternar modo
+  const toggleButtonClass = isRegistering
+    ? 'text-gray-200 hover:underline' // Texto claro para registro
+    : 'text-emerald-400 hover:underline'; // Texto verde esmeralda para login
+
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4 py-6 sm:px-6 md:px-8 font-inter">
-      <div className="bg-gray-800 p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-sm transform transition-all duration-300 hover:scale-102">
+      <div className={`${cardBgClass} ${cardBorderClass} p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-sm transform transition-all duration-300 hover:scale-102`}>
         <div className="flex justify-center mb-6">
           <img
             src="/dindion_logo.png"
@@ -105,13 +121,13 @@ const Auth = ({ onLoginSuccess }) => {
         <button
           onClick={isRegistering ? handleRegister : handleLogin}
           ref={mainButtonRef}
-          className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+          className={`w-full py-3 rounded-lg font-semibold transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg ${mainButtonClass}`}
         >
           {isRegistering ? 'Criar Conta' : 'Acessar'}
         </button>
         <button
           onClick={() => setIsRegistering(!isRegistering)}
-          className="w-full mt-4 text-emerald-400 py-2 rounded-lg hover:underline transition duration-200 text-sm"
+          className={`w-full mt-4 py-2 rounded-lg hover:underline transition duration-200 text-sm ${toggleButtonClass}`}
         >
           {isRegistering ? 'Já tem uma conta? Faça login' : 'Não tem uma conta? Registre-se'}
         </button>
@@ -121,4 +137,3 @@ const Auth = ({ onLoginSuccess }) => {
 };
 
 export default Auth;
-
